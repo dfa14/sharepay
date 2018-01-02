@@ -1,0 +1,26 @@
+{
+  "name": "sharepay",
+  "version": "0.0.1",
+  "description": "Sharepay by Vir Manu Romu and Dom",
+  "main": "server.js",
+  "scripts": {
+    "test": "jest --coverage",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/dfa14/sharepay.git"
+  },
+  "author": "DFA",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dfa14/sharepay/issues"
+  },
+  "homepage": "https://github.com/dfa14/sharepay#readme",
+  "dependencies": {
+    "express": "^4.16.2",
+    "jest": "^22.0.4",
+    "nunjucks": "^3.0.1",
+    "pg": "^7.4.0"
+  }
+}
