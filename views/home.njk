@@ -1,0 +1,18 @@
+{% extends "layout.njk" %}
+
+{% block content %}
+<div>
+
+  <h2> Connectez-vous avec email et mot de passe </h2>
+
+  <form method="POST" action="/login">
+    <label for="email"> Votre adresse email </label>
+    <input type="text" name="username" maxlength="30"/>
+    <label for="password"> Votre mot de passe </label>
+    <input type="password" name="password"/>
+    <button type="submit">
+    login
+    </button>
+  </form>
+</div>
+{% endblock %}
