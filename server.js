@@ -2,6 +2,7 @@ const express = require("express");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const nunjucks = require("nunjucks");
+const event = require("./event.js");
 const PG = require("pg");
 const uuidv4 = require("uuid/v4");
 const sha256 = require('js-sha256');
@@ -175,11 +176,35 @@ app.get("/logout", function(request, result) {
 });
 
 app.post(
-  "/save-expense",
+  "/newevent",
   function(request, result) {
-    // request.body contains an object with our named fields
+    const id_buddies = request.body.buddies;
+    const active_buddies = [];
+
+    id_buddies.filter(id => {
+      if (request.body[id] === 'on') {
+          active_buddies.push(id);
+          return true;
+      } else {return false; }});
+
+    console.log(active_buddies);
   }
 );
+
+app.get("/newevent", function(request, result) {
+        event.listBuddies()
+        .then (buddies=>{
+          return result.render("newevent", {
+            buddies : buddies
+          });
+        })
+        .catch(error => {
+          callback(error);
+        });
+
+  });
+
+
 
 app.listen(port, function () {
   console.log("Server listening on port:" + port);
