@@ -3,13 +3,13 @@
 {% block content %}
 
 <div class="container justify-content-center">
-  <form method="POST" action="/">
+  <form method="POST" action="/new_account">
     <div class="row pt-5 justify-content-center">
       <div class="col-2 text-right">
         <label for="email"> Your email </label>
       </div>
       <div class="col-4 text-left">
-        <input type="text" name="username" maxlength="150"/>
+        <input type="text" name="username" value="{{ user.email }}" maxlength="150"/>
       </div>
     </div>
     <div class="row justify-content-center">
@@ -17,7 +17,15 @@
         <label for="password"> Your password </label>
       </div>
       <div class="col-4 text-left">
-        <input type="password" name="password"/>
+        <input type="password" name="password" value="{{ user.password }}" />
+      </div>
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-2  text-right">
+        <label for="pseudo"> Your pseudo </label>
+      </div>
+      <div class="col-4 text-left">
+        <input type="text" name="pseudo" value="{{ user.pseudo }}" />
       </div>
     </div>
     <div class="row pt-3">
@@ -28,18 +36,16 @@
   </form>
   <div class="row pt-3">
     <div class="col text-center">
+      <p class="message">{{ message }}</p>
       <p class="error">{{ error }} </p>
-      </h6>
     </div>
   </div>
   <div class="row pt-3">
     <div class="col text-center">
-      <h6> New to Sharepay ?
-      <a href="/new_account">Click here</a>
+      <h6> Discover Sharepay
+      <a href="/dashboard">Click here</a>
       </h6>
     </div>
-  </div>
-
-</div>
+  </div></div>
 
 {% endblock %}

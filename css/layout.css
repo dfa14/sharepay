@@ -16,3 +16,13 @@ font-family: sans-serif;
 a {
   color: #aaaaaa;
 }
+
+.error {
+  color: #B40431;
+  font-weight: bold;
+}
+
+.message {
+  color: #aaaaaa;
+  font-weight: bold;
+}
