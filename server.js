@@ -192,6 +192,17 @@ app.get("/eventdetail", function(request, result){
 });
 
 
+
+app.get("/new_expense", function(request, result){
+  result.render(
+    "new_expense"
+  );
+});
+
+
+
+
+
 app.get("/logout", function(request, result) {
   request.logout();
   result.redirect("/");
