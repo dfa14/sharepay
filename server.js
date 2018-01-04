@@ -3,8 +3,10 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const nunjucks = require("nunjucks");
 const PG = require("pg");
-const port = process.env.PORT || 3000;
+const uuidv4 = require("uuid/v4");
+const sha256 = require('js-sha256');
 
+const port = process.env.PORT || 3000;
 const users = require("./users");
 
 
@@ -42,6 +44,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 passport.serializeUser(function(user, callback) {
+  console.log("serializeUser:");
+  console.log(user);
   return callback(null, user.email);
 });
 
@@ -75,69 +79,99 @@ app.get("/", function(request, result){
   );
 });
 
-
-
-
-// app.post(
-//   "/",
-//   passport.authenticate("local", { failureRedirect: "/" }),
-//   function(request, result) {
-//     console.log("redirect to /profile");
-//     result.redirect("/profile");
-//   }
-// );
-
-app.post("/", passport.authenticate("local",
-  { successRedirect: "/profile",
-    failureRedirect: "/",
-    failureFlash: true }
-  ));
-
-
-// app.post(
-//   '/',
-//   function(request, result, callback) {
-//     passport.authenticate(
-//       'local',
-//       function(error, user, info) {
-//         if (error) { return callback(error); }
-//         if (!user) { return result.redirect('/'); }
-//
-//         request.logIn(user, function(error) {
-//           if (error) {
-//             return callback(error);
-//           }
-//           return result.redirect('/users/' + user.displayName);
-//         });
-//       }
-//     )(request, result, callback);
-//   }
-// );
-
-
-
-
-
+app.post(
+  '/',
+  function(request, result, callback) {
+    passport.authenticate(
+      'local',
+      function(error, user, info) {
+        if (error) {
+          result.render(
+            "home",
+            {error:error}
+          );
+        }
+        else {
+          request.logIn(user, function(error) {
+            if (error) {
+              return callback(error);
+            }
+            console.log(user);
+            return result.redirect("/dashboard");
+          });
+        }
+      }
+    )(request, result, callback);
+  }
+);
 
 app.get(
-  "/profile",
-  require("connect-ensure-login").ensureLoggedIn("/"),
+  "/new_account",
   function(request, result) {
-    console.log("toto", request.user)
-    result.render("profile", {
-      id: request.user.id,
-      name: request.user.displayName,
-      email: request.user.email
+    result.render("new_account");
+  }
+);
+
+app.post(
+  '/new_account',
+
+  function(request, result) {
+
+    const user = {
+      email:request.body.username,
+      password:sha256(request.body.password),
+      pseudo:request.body.pseudo
+    };
+
+    if (user.email==="") {
+      return result.render("new_account",{error:"Missing email",user:user});
+    }
+    if (user.password==="") {
+      return result.render("new_account",{error:"Missing password",user:user});
+    }
+    if (user.pseudo==="") {
+      return result.render("new_account",{error:"Missing pseudo",user:user});
+    }
+
+    const client = new PG.Client();
+    client.connect();
+
+    const uuid=uuidv4();
+
+    return client.query(
+      "INSERT INTO users (id, email, password, pseudo) VALUES ($1, $2, $3, $4);",
+      [uuid, user.email, user.password, user.pseudo]
+    )
+    .then((dbResult) => {
+      console.log(user);
+
+      const dbUser={
+        email:user.email,
+        password:user.password
+      };
+
+      request.logIn(dbUser, function(error) {
+        if (error) {
+          console.log(error);
+          result.render("new_account",{error:error, user:user});
+        }
+        result.render("new_account",{message:`Welcome on Sharepay ${user.pseudo} !`, user:user});
+      });
+    })
+
+    .catch(error => {
+      console.warn(error);
     });
   }
 );
+
+
+
 
 app.get("/logout", function(request, result) {
   request.logout();
   result.redirect("/");
 });
-
-
 
 app.post(
   "/save-expense",

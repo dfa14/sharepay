@@ -1,5 +1,7 @@
 
 const PG = require("pg");
+const sha256 = require('js-sha256');
+
 
 function findUserByEmail (email) {
     const client = new PG.Client();
@@ -19,22 +21,23 @@ function findUserByEmail (email) {
   }
 
 function findUser(email,password) {
+
+  const cryptPassword=sha256(password);
   const client = new PG.Client();
   client.connect();
-  console.log(email);
+
 
   return client.query(
     "SELECT * FROM users WHERE email=$1::text and password=$2::text;",
-    [email,password]
+    [email,cryptPassword]
     )
     .then(res => {
-      console.log(res.rows[0]);
 
       return new Promise((resolve, reject) => {
 
         if (res.rowCount===0) {
           //email+password not found in database
-          reject("User unknown" + res.rowCount);
+          reject("User unknown");
 
         } else if (res.rowCount===1) {
           //email+password found in database
@@ -46,6 +49,8 @@ function findUser(email,password) {
       })
     })
 }
+
+
 
 module.exports = {
   findUserByEmail:findUserByEmail,
