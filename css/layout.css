@@ -1,0 +1,40 @@
+.grid
+{
+  background-color: #D8D8D8;
+  opacity: 0.7;
+  text-align: center;
+}
+
+.titlegrid
+{
+  background-color: #BDBDBD;
+  text-align: center;
+}
+
+.body {
+  padding-top: 40px;
+  max-height: 100%;
+  background-image: url("/background.jpg");
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+
+h1,h2,h3,h4,h5,h6,p,label,a {
+color: #eeeeee;
+font-family: sans-serif;
+}
+
+a {
+  color: #aaaaaa;
+}
+
+.error {
+  color: #B40431;
+  font-weight: bold;
+}
+
+.message {
+  color: #aaaaaa;
+  font-weight: bold;
+}
