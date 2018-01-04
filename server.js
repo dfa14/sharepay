@@ -3,6 +3,7 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const nunjucks = require("nunjucks");
 const port = process.env.PORT || 3000;
+const event = require("./event.js");
 
 const PG = require("pg");
 
@@ -111,7 +112,7 @@ app.post(
   passport.authenticate("local", { failureRedirect: "/" }),
   function(request, result) {
     console.log("redirect to /profile");
-    result.redirect("/profile");
+    result.redirect("/newevent");      // à modifier vers le Dashboard de Dom
   }
 );
 
@@ -119,7 +120,6 @@ app.get(
   "/profile",
   require("connect-ensure-login").ensureLoggedIn("/"),
   function(request, result) {
-    console.log("toto", request.user)
     result.render("profile", {
       id: request.user.id,
       name: request.user.displayName,
@@ -135,11 +135,35 @@ app.get("/logout", function(request, result) {
 
 
 app.post(
-  "/save-expense",
+  "/newevent",
   function(request, result) {
-    // request.body contains an object with our named fields
+    const id_buddies = request.body.buddies;
+    const active_buddies = [];
+
+    id_buddies.filter(id => {
+      if (request.body[id] === 'on') {
+          active_buddies.push(id);
+          return true;
+      } else {return false; }});
+
+    console.log(active_buddies);
   }
 );
+
+app.get("/newevent", function(request, result) {
+        event.listBuddies()
+        .then (buddies=>{
+          return result.render("newevent", {
+            buddies : buddies
+          });
+        })
+        .catch(error => {
+          callback(error);
+        });
+
+  });
+
+
 
 app.listen(port, function () {
   console.log("Server listening on port:" + port);
