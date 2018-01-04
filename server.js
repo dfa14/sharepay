@@ -8,8 +8,7 @@ const sha256 = require('js-sha256');
 
 const port = process.env.PORT || 3000;
 const users = require("./users");
-
-
+const tempevents = [{ title: "event 1", status : "active"}, { title: "event 2", status : "active"}];
 //to setup web server with express
 const app = express();
 
@@ -165,7 +164,9 @@ app.post(
   }
 );
 
-
+app.get("/dashboard", function(request, result){
+  result.render("dashboard", {tempevents:tempevents})
+});
 
 
 app.get("/logout", function(request, result) {
