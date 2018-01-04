@@ -2,66 +2,31 @@ const express = require("express");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const nunjucks = require("nunjucks");
+const PG = require("pg");
 const port = process.env.PORT || 3000;
 
-const PG = require("pg");
-
-function findUserByEmail (email) {
-    const client = new PG.Client();
-    client.connect();
-    console.log(email);
-
-    return client.query(
-      "SELECT * FROM users WHERE email=$1::text;",
-      [email]
-      )
-      .then(res => {
-        console.log(res.rows[0]);
-        return res.rows[0];
-      })
-      .catch(e => console.error(e.stack)
-      )
-  }
-
-function findUser(email,password) {
-  const client = new PG.Client();
-  client.connect();
-  console.log(email);
-
-  return client.query(
-    "SELECT * FROM users WHERE email=$1::text and password=$2::text;",
-    [email,password]
-    )
-    .then(res => {
-      console.log(res.rows[0]);
-
-      return new Promise((resolve, reject) => {
-        const user=res.rows[0];
-        if (user.password === password) {
-         resolve(user);
-        }
-        reject("wrong password");
-      })
-    })
-}
+const users = require("./users");
 
 
-
-
-
+//to setup web server with express
 const app = express();
 
+//for nunjucks to work
 nunjucks.configure("views", {
   autoescape: true,
   express: app
 });
-
 app.set("views", __dirname + "/views");
 app.set("view engine", "njk");
+
+//to set default root for images and css
 app.use(express.static("images"));
 app.use(express.static("css"));
+
+//for forms to work
 app.use(require("body-parser").urlencoded({ extended: true }));
 
+//for passport to work
 app.use(require("cookie-parser")());
 app.use(
   require("express-session")({
@@ -70,24 +35,25 @@ app.use(
     saveUninitialized: false
   })
 );
+
 // Initialize Passport and restore authentication state,
 // if any, from the session.
 app.use(passport.initialize());
 app.use(passport.session());
 
 passport.serializeUser(function(user, callback) {
-  return callback(null, user.email); // A checker si changement nécessaire user.email
+  return callback(null, user.email);
 });
 
 passport.deserializeUser(function(email, callback) {
-  return findUserByEmail(email).then(user => {
+  return users.findUserByEmail(email).then(user => {
     callback(null, user)
   });
 });
 
 passport.use(
   new LocalStrategy(function(email, password, callback) {
-    findUser(email, password)
+    users.findUser(email, password)
       .then(user => {
         console.log("user found :", user);
         callback(null, user);
@@ -99,21 +65,59 @@ passport.use(
   })
 );
 
+
+
+//beginning of root definition
+
 app.get("/", function(request, result){
   result.render(
-    "home",
-    {title:"Home"}
+    "home"
   );
 });
 
-app.post(
-  "/login",
-  passport.authenticate("local", { failureRedirect: "/" }),
-  function(request, result) {
-    console.log("redirect to /profile");
-    result.redirect("/profile");
-  }
-);
+
+
+
+// app.post(
+//   "/",
+//   passport.authenticate("local", { failureRedirect: "/" }),
+//   function(request, result) {
+//     console.log("redirect to /profile");
+//     result.redirect("/profile");
+//   }
+// );
+
+app.post("/", passport.authenticate("local",
+  { successRedirect: "/profile",
+    failureRedirect: "/",
+    failureFlash: true }
+  ));
+
+
+// app.post(
+//   '/',
+//   function(request, result, callback) {
+//     passport.authenticate(
+//       'local',
+//       function(error, user, info) {
+//         if (error) { return callback(error); }
+//         if (!user) { return result.redirect('/'); }
+//
+//         request.logIn(user, function(error) {
+//           if (error) {
+//             return callback(error);
+//           }
+//           return result.redirect('/users/' + user.displayName);
+//         });
+//       }
+//     )(request, result, callback);
+//   }
+// );
+
+
+
+
+
 
 app.get(
   "/profile",
@@ -132,6 +136,7 @@ app.get("/logout", function(request, result) {
   request.logout();
   result.redirect("/");
 });
+
 
 
 app.post(
