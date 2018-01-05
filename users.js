@@ -76,13 +76,6 @@ function selectUsers() {
   client.connect();
 
   return client.query("SELECT * FROM users;")
-    .then(res => {
-      return res.rows;
-    })
-    .catch(e => {
-      console.error(e.stack);
-      return e.stack;
-    });
 }
 
 module.exports = {

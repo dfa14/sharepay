@@ -60,7 +60,6 @@ function listBuddies() {
 
   }
 
-
 function insertEventParticipants(uuid,idbuddie) {
   const client = new PG.Client();
   client.connect();
@@ -81,7 +80,33 @@ function insertEventParticipants(uuid,idbuddie) {
 }
 
 
+  function selectEvent(eventId) {
+    const client = new PG.Client();
+    client.connect();
+
+    return client.query(
+      "SELECT * FROM events WHERE id=$1",
+      [eventId]
+    )
+  }
+
+  function selectEventParticipants(eventId) {
+    const client = new PG.Client();
+    client.connect();
+
+    return client.query(
+      `SELECT u.*
+      FROM event_participants p, users u
+      WHERE event_id=$1
+      AND p.user_id = u.id `,
+      [eventId]
+    )
+  }
+
   module.exports = {
     listBuddies:listBuddies,
-    insertEvent:insertEvent
+    insertEvent:insertEvent,
+    insertEventParticipants:insertEventParticipants,
+    selectEvent:selectEvent,
+    selectEventParticipants:selectEventParticipants
   };

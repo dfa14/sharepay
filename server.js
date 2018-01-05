@@ -2,14 +2,14 @@ const express = require("express");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const nunjucks = require("nunjucks");
-const event = require("./event.js");
 const PG = require("pg");
 const sha256 = require('js-sha256');
 
 const port = process.env.PORT || 3000;
 const users = require("./users");
-// DFA -> A supprimer une fois db request ok
-const tempevents = [{ title: "event 1", status : "active"}, { title: "event 2", status : "active"}];
+const event = require("./event.js");
+const expense = require("./expense.js");
+
 //to setup web server with express
 const app = express();
 
@@ -38,8 +38,7 @@ app.use(
   })
 );
 
-// Initialize Passport and restore authentication state,
-// if any, from the session.
+// Initialize Passport and restore authentication state, if any, from the session.
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -70,8 +69,9 @@ passport.use(
 );
 
 
-
-//beginning of root definition
+/////////////////////////////////////////
+// roots for authent & account creation
+/////////////////////////////////////////
 
 app.get("/", function(request, result){
   result.render(
@@ -152,6 +152,17 @@ app.post(
   }
 );
 
+app.get("/logout", function(request, result) {
+  request.logout();
+  result.redirect("/");
+});
+
+
+
+/////////////////////////////////////////
+// roots for dashboard of events
+/////////////////////////////////////////
+
 
 app.get(
   '/dashboard',
@@ -173,49 +184,9 @@ app.get(
 );
 
 
-app.get("/eventdetail", function(request, result){
-  result.render("eventdetail")
-});
-
-
-
-
-
-app.get("/:eventId/new_expense", function(request, result){
-  const eventId = request.params.eventId;
-  const user = request.user;
-
-  return users.selectUsers()
-  .then(users => {
-    result.render(`new_expense`,{
-      eventId:eventId,
-      user:user,
-      users:users
-    });
-  })
-  .catch(e => {
-    result.render(`new_expense`,{
-      eventId:eventId,
-      user:user,
-      error:error
-    });
-  });
-});
-
-app.post("/new_expense", function (request,result) {
-  const label = request.body.label;
-  const payer = request.body.payer;
-  const amount = (parseInt(request.body.euros,10)*100) + parseInt(request.body.cents,10);
-
-  console.log(label,amount,payer);
-});
-
-
-
-app.get("/logout", function(request, result) {
-  request.logout();
-  result.redirect("/");
-});
+/////////////////////////////////////////
+// roots for event 
+/////////////////////////////////////////
 
 app.post(
   "/newevent",
@@ -261,6 +232,86 @@ app.get("/newevent", function(request, result) {
 
   });
 
+  app.get("/eventdetail", function(request, result){
+    result.render("eventdetail")
+  });
+
+
+
+/////////////////////////////////////////
+// roots for expense
+/////////////////////////////////////////
+
+app.get("/:eventId/new_expense", function(request, result){
+
+  const eventId = request.params.eventId;
+  const user = request.user;
+
+  Promise.all(
+      [
+        event.selectEvent(eventId),
+        users.selectUsers(),
+        event.selectEventParticipants(eventId)
+      ]
+    )
+  .then(function(promiseAllResult) {
+      console.log(promiseAllResult[2]);
+
+      result.render("new_expense", {
+        event : promiseAllResult[0].rows[0],
+        users : promiseAllResult[1].rows,
+        participants : promiseAllResult[2].rows,
+        user:user
+      });
+    })
+  .catch(dbError => {
+    result.render("new_expense",{
+      user:user,
+      error:dbError.stack
+    });
+  });
+});
+
+
+app.post("/:eventId/new_expense", function (request,result) {
+  const eventId = request.params.eventId;
+  const label = request.body.label;
+  const payer = request.body.payer;
+  const amount = (parseInt(request.body.euros,10)*100) + parseInt(request.body.cents,10);
+  const user = request.user;
+
+  const participants = request.body.checkbox_participants;
+  console.log(request.body);
+
+  participants.filter(id => (request.body[id] === 'on'));
+
+  const expenseToInsert={
+    label:label,
+    userId:payer,
+    eventId:eventId,
+    amount:amount
+  };
+
+  return expense.insertExpense(expenseToInsert)
+  .then((dbResult) => {
+    event.selectEvent(eventId)
+    .then((dbResult)=> {
+      result.render("new_expense",{
+        expense:expenseToInsert,
+        user:user,
+        event:dbResult.rows[0],
+        message:"Creation successful"
+      });
+    })
+  })
+  .catch((dbError) => {
+    result.render("new_expense",{
+      expense:expenseToInsert,
+      user:user,
+      error:dbError.stack
+    });
+  });
+});
 
 
 app.listen(port, function () {

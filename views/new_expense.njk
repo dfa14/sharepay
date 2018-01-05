@@ -3,48 +3,70 @@
 {% block content %}
 
 <div class="container justify-content-center">
-  <form method="POST" action="/new_expense">
-    <div class="row pt-5">
-      <div class="col-6 text-left">
-        <h4> New expense for event {{ event.label }}</h4>
-      </div>
+  <form method="POST" action="/{{ event.id }}/new_expense">
+
+    <div class="text-left pt-4">
+      <h4> New expense for event : {{ event.label }}</h4>
     </div>
 
-    <div class="form-row pt-3 ">
-      <div class="col-2 text-left">
-        <label for="label"> Expense label </label>
-      </div>
-      <div class="col-4 text-left">
-        <input class="form-control" type="text" name="label"/>
-      </div>
-    </div>
+    <div class="row pt-2">
+      <div class="col-7">
 
-    <div class="form-row pt-3">
-      <div class="col-2  text-left">
-        <label for="amount"> Amount </label>
-      </div>
-      <div class="input-group col-3">
-        <input type="text" class="form-control col-7 text-right" name="euros">
-        <h5 class="pt-2"> , </h5>
-        <input type="text" class="form-control col-3" name="cents">
-        <div class="bg-light input-group-append col-1">
-          <h5 class="input-group-text pt-2">€ </h5>
+        <div class="form-row pt-3 ">
+          <div class="col-md-4 text-left">
+            <label for="label"> Expense label </label>
+          </div>
+          <div class="col-md-8 text-left">
+            <input class="form-control" type="text" value="{{ expense.label }}" name="label"/>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <div class="form-row pt-3 ">
-      <div class="col-2 text-left">
-        <label for="payer"> Payer </label>
+        <div class="form-row pt-3">
+          <div class="col-md-4  text-left">
+            <label for="amount"> Amount </label>
+          </div>
+          <div class="input-group col-md-6">
+            <input type="text" class="form-control col-7 text-right" name="euros">
+            <h5 class="pt-2"> , </h5>
+            <input type="text" class="form-control col-3" name="cents">
+            <div class="bg-light input-group-append col-1">
+              <h5 class="input-group-text pt-2">€ </h5>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row pt-3 ">
+          <div class="col-md-4 text-left">
+            <label for="payer"> Payer </label>
+          </div>
+          <div class="col-md-8 text-left">
+            <select class="custom-select form-control pb-5" name="payer" multiple>
+              <option selected value="{{user.id}}">{{ user.pseudo }}</option>
+              {% for item in users %}
+                <option value="{{item.id}}">{{ item.pseudo }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
       </div>
-      <p> {{ item.pseudo }} </p>
-      <div class="col-4 text-left">
-        <select class="custom-select form-control pb-5" name="payer" multiple>
-          <option selected value="{{user.id}}">{{ user.pseudo }}</option>
-          {% for item in users %}
-            <option value="{{item.id}}">{{ item.pseudo }}</option>
-          {% endfor %}
-        </select>
+      <div class="col-5">
+
+        <label class="pb-4 pt-2"> Select the beneficiaries </label>
+
+        {% for item in participants %}
+          <div class="form-row  offset-2">
+            <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <div class="input-group-text">
+                  <input type="checkbox" checked name="{{ item.id }}">
+                  <input type="hidden" name="checkbox_participants" value="{{ item.id }}" />
+                </div>
+              </div>
+              <label class="custom-control-label mx-2">{{ item.pseudo }}</label>
+            </div>
+          </div>
+        {% endfor %}
       </div>
     </div>
     <div class="row pt-5">
