@@ -9,6 +9,7 @@ const sha256 = require('js-sha256');
 
 const port = process.env.PORT || 3000;
 const users = require("./users");
+// DFA -> A supprimer une fois db request ok
 const tempevents = [{ title: "event 1", status : "active"}, { title: "event 2", status : "active"}];
 //to setup web server with express
 const app = express();
@@ -165,8 +166,29 @@ app.post(
   }
 );
 
-app.get("/dashboard", function(request, result){
-  result.render("dashboard", {tempevents:tempevents})
+
+app.get(
+  '/dashboard',
+
+  function(request, result) {
+    const client = new PG.Client();
+    client.connect();
+    console.log('toto dans le post dashboard1');
+    return client.query(
+      "SELECT label, statut, date FROM events;"
+    )
+    .then((dbResult) => {
+      console.log(dbResult);
+      console.log('toto dans le post dashboard2');
+      console.log(dbResult.rows);
+    result.render("dashboard", {events:dbResult.rows})
+    });
+  }
+);
+
+
+app.get("/eventdetail", function(request, result){
+  result.render("eventdetail")
 });
 
 
