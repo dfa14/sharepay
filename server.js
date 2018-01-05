@@ -203,16 +203,23 @@ app.post(
     const idBuddies = request.body.buddies;
     const label = request.body.label
     const activeBuddies = [];
+    const newBuddies = [];
 
     idBuddies.filter(id => {
+      console.log("id : ", request.body);
+      if (id.lastIndexOf("NEW_") !== -1){
+        const id1 = id.slice(4, id.length);
+        newBuddies.push(id1);
+        return true;
+      }
+
       if (request.body[id] === 'on') {
           activeBuddies.push(id);
           return true;
-      } else {return false; }});
+      }
+      else {return false; }});
 
-    console.log(activeBuddies);
-
-    return event.insertEvent(label, activeBuddies)
+    return event.insertEvent(label, activeBuddies, newBuddies)
     .then (res => {result.redirect("/dashboard");})
     .catch(error => {
       callback(error);
