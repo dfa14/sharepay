@@ -200,16 +200,24 @@ app.get("/logout", function(request, result) {
 app.post(
   "/newevent",
   function(request, result) {
-    const id_buddies = request.body.buddies;
-    const active_buddies = [];
+    const idBuddies = request.body.buddies;
+    const label = request.body.label
+    const activeBuddies = [];
 
-    id_buddies.filter(id => {
+    idBuddies.filter(id => {
       if (request.body[id] === 'on') {
-          active_buddies.push(id);
+          activeBuddies.push(id);
           return true;
       } else {return false; }});
 
-    console.log(active_buddies);
+    console.log(activeBuddies);
+
+    return event.insertEvent(label, activeBuddies)
+    .then (res => {result.redirect("/dashboard");})
+    .catch(error => {
+      callback(error);
+    });
+
   }
 );
 
