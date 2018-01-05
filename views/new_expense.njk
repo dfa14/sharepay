@@ -4,38 +4,52 @@
 
 <div class="container justify-content-center">
   <form method="POST" action="/new_expense">
-    <div class="row">
+    <div class="row pt-5">
+      <div class="col-6 text-left">
+        <h4> New expense for event {{ event.label }}</h4>
+      </div>
+    </div>
+
+    <div class="form-row pt-3 ">
+      <div class="col-2 text-left">
+        <label for="label"> Expense label </label>
+      </div>
+      <div class="col-4 text-left">
+        <input class="form-control" type="text" name="label"/>
+      </div>
+    </div>
+
+    <div class="form-row pt-3">
+      <div class="col-2  text-left">
+        <label for="amount"> Amount </label>
+      </div>
+      <div class="input-group col-3">
+        <input type="text" class="form-control col-7 text-right" name="euros">
+        <h5 class="pt-2"> , </h5>
+        <input type="text" class="form-control col-3" name="cents">
+        <div class="bg-light input-group-append col-1">
+          <h5 class="input-group-text pt-2">€ </h5>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row pt-3 ">
+      <div class="col-2 text-left">
+        <label for="payer"> Payer </label>
+      </div>
+      <p> {{ item.pseudo }} </p>
+      <div class="col-4 text-left">
+        <select class="custom-select form-control pb-5" name="payer" multiple>
+          <option selected value="{{user.id}}">{{ user.pseudo }}</option>
+          {% for item in users %}
+            <option value="{{item.id}}">{{ item.pseudo }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="row pt-5">
       <div class="col text-center">
-        <h1> New expense </h1>
-      </div>
-    </div>
-    <div class="row pt-5 justify-content-center">
-      <div class="col-2 text-right">
-        <label for="email"> Your email </label>
-      </div>
-      <div class="col-4 text-left">
-        <input type="text" name="username" value="{{ user.email }}" maxlength="150"/>
-      </div>
-    </div>
-    <div class="row justify-content-center">
-      <div class="col-2  text-right">
-        <label for="password"> Your password </label>
-      </div>
-      <div class="col-4 text-left">
-        <input type="password" name="password" value="{{ user.password }}" />
-      </div>
-    </div>
-    <div class="row justify-content-center">
-      <div class="col-2  text-right">
-        <label for="pseudo"> Your pseudo </label>
-      </div>
-      <div class="col-4 text-left">
-        <input type="text" name="pseudo" value="{{ user.pseudo }}" />
-      </div>
-    </div>
-    <div class="row pt-3">
-      <div class="col text-center">
-        <button type="submit"> login </button>
+        <button type="submit"> Create </button>
       </div>
     </div>
   </form>
@@ -45,12 +59,6 @@
       <p class="error">{{ error }} </p>
     </div>
   </div>
-  <div class="row pt-3">
-    <div class="col text-center">
-      <h6> Discover Sharepay
-      <a href="/dashboard">Click here</a>
-      </h6>
-    </div>
-  </div></div>
+</div>
 
 {% endblock %}

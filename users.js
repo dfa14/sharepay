@@ -1,9 +1,11 @@
 
 const PG = require("pg");
 const sha256 = require('js-sha256');
+const uuidv4 = require("uuid/v4");
 
 
-function findUserByEmail (email) {
+
+function findUserByEmail(email) {
     const client = new PG.Client();
     client.connect();
     console.log(email);
@@ -50,9 +52,42 @@ function findUser(email,password) {
     })
 }
 
+function insertUser(user) {
+  const client = new PG.Client();
+  client.connect();
 
+  const uuid=uuidv4();
+
+  return client.query(
+    "INSERT INTO users (id, email, password, pseudo) VALUES ($1, $2, $3, $4);",
+    [uuid, user.email, user.password, user.pseudo]
+  )
+  .then((dbResult) => {
+    return user;
+  })
+  .catch(error => {
+    console.warn(error);
+  });
+}
+
+function selectUsers() {
+
+  const client = new PG.Client();
+  client.connect();
+
+  return client.query("SELECT * FROM users;")
+    .then(res => {
+      return res.rows;
+    })
+    .catch(e => {
+      console.error(e.stack);
+      return e.stack;
+    });
+}
 
 module.exports = {
   findUserByEmail:findUserByEmail,
-  findUser:findUser
+  findUser:findUser,
+  selectUsers:selectUsers,
+  insertUser:insertUser
 };

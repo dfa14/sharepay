@@ -4,7 +4,6 @@ const LocalStrategy = require("passport-local").Strategy;
 const nunjucks = require("nunjucks");
 const event = require("./event.js");
 const PG = require("pg");
-const uuidv4 = require("uuid/v4");
 const sha256 = require('js-sha256');
 
 const port = process.env.PORT || 3000;
@@ -98,7 +97,7 @@ app.post(
               return callback(error);
             }
             console.log(user);
-            return result.redirect("/dashboard");
+            return result.redirect("/83d2720d-f532-4017-8470-6cae2bbe93f8/new_expense");
           });
         }
       }
@@ -134,17 +133,8 @@ app.post(
       return result.render("new_account",{error:"Missing pseudo",user:user});
     }
 
-    const client = new PG.Client();
-    client.connect();
-
-    const uuid=uuidv4();
-
-    return client.query(
-      "INSERT INTO users (id, email, password, pseudo) VALUES ($1, $2, $3, $4);",
-      [uuid, user.email, user.password, user.pseudo]
-    )
-    .then((dbResult) => {
-      console.log(user);
+    return users.insertUser(user)
+    .then(user=>{
 
       const dbUser={
         email:user.email,
@@ -159,10 +149,6 @@ app.post(
         result.render("new_account",{message:`Welcome on Sharepay ${user.pseudo} !`, user:user});
       });
     })
-
-    .catch(error => {
-      console.warn(error);
-    });
   }
 );
 
@@ -193,13 +179,36 @@ app.get("/eventdetail", function(request, result){
 
 
 
-app.get("/new_expense", function(request, result){
-  result.render(
-    "new_expense"
-  );
+
+
+app.get("/:eventId/new_expense", function(request, result){
+  const eventId = request.params.eventId;
+  const user = request.user;
+
+  return users.selectUsers()
+  .then(users => {
+    result.render(`new_expense`,{
+      eventId:eventId,
+      user:user,
+      users:users
+    });
+  })
+  .catch(e => {
+    result.render(`new_expense`,{
+      eventId:eventId,
+      user:user,
+      error:error
+    });
+  });
 });
 
+app.post("/new_expense", function (request,result) {
+  const label = request.body.label;
+  const payer = request.body.payer;
+  const amount = (parseInt(request.body.euros,10)*100) + parseInt(request.body.cents,10);
 
+  console.log(label,amount,payer);
+});
 
 
 
