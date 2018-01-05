@@ -185,7 +185,7 @@ app.get(
 
 
 /////////////////////////////////////////
-// roots for event 
+// roots for event
 /////////////////////////////////////////
 
 app.post(
@@ -280,11 +280,6 @@ app.post("/:eventId/new_expense", function (request,result) {
   const amount = (parseInt(request.body.euros,10)*100) + parseInt(request.body.cents,10);
   const user = request.user;
 
-  const participants = request.body.checkbox_participants;
-  console.log(request.body);
-
-  participants.filter(id => (request.body[id] === 'on'));
-
   const expenseToInsert={
     label:label,
     userId:payer,
@@ -292,21 +287,22 @@ app.post("/:eventId/new_expense", function (request,result) {
     amount:amount
   };
 
-  return expense.insertExpense(expenseToInsert)
-  .then((dbResult) => {
-    event.selectEvent(eventId)
-    .then((dbResult)=> {
-      result.render("new_expense",{
-        expense:expenseToInsert,
-        user:user,
-        event:dbResult.rows[0],
-        message:"Creation successful"
-      });
+  const participants = request.body.beneficiaries;
+  const beneficiaries = participants.filter(id => {
+    return (request.body[id] === 'on');
+  });
+
+  Promise.all(
+      [
+        event.selectEvent(eventId),
+        expense.insertExpense(expenseToInsert, beneficiaries)
+      ]
+    )
+  .then(function(promiseAllResult) {
+      result.redirect(`/:${eventId}`);
     })
-  })
   .catch((dbError) => {
     result.render("new_expense",{
-      expense:expenseToInsert,
       user:user,
       error:dbError.stack
     });

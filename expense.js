@@ -3,7 +3,7 @@ const PG = require("pg");
 const uuidv4 = require("uuid/v4");
 
 
-function insertExpense(expense) {
+function insertExpense(expense, beneficiaries) {
   const client = new PG.Client();
   client.connect();
 
@@ -13,18 +13,24 @@ function insertExpense(expense) {
     "INSERT INTO expenses (id, label, user_id, event_id, amount) VALUES ($1, $2, $3, $4, $5) RETURNING *;",
     [uuid, expense.label, expense.userId, expense.eventId, expense.amount]
   )
-}
+  .then(dbResult => {
+    const expenseId=dbResult.rows[0].id;
 
-function insertBeneficiaries(expenseId, userId) {
-  const client = new PG.Client();
-  client.connect();
-  return client.query(
-    "INSERT INTO expense_beneficiaries (expense_id, user_id) VALUES ($1, $2) RETURNING *;",
-    [expenseId,userId]
-  )
+    const promises = beneficiaries.map(userId => {
+      return client.query(
+        "INSERT INTO expense_beneficiaries (expense_id, user_id) VALUES ($1, $2) RETURNING *;",
+        [expenseId,userId]
+      )
+    });
+
+    return Promise.all(promises)
+     .then(() => {
+       client.end();
+       return expenseId;
+     });
+  });
 }
 
 module.exports = {
-  insertExpense:insertExpense,
-  insertBeneficiaries:insertBeneficiaries
+  insertExpense:insertExpense
 };
