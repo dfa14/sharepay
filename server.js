@@ -309,6 +309,17 @@ app.post("/:eventId/new_expense", function (request,result) {
   });
 });
 
+/////////////////////////////////////////
+// roots for balance
+/////////////////////////////////////////
+
+app.get("/:eventId/balance", function(request, result){
+
+  const eventId = request.params.eventId;
+
+});
+
+
 
 app.listen(port, function () {
   console.log("Server listening on port:" + port);
