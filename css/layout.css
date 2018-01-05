@@ -38,3 +38,11 @@ a {
   color: #aaaaaa;
   font-weight: bold;
 }
+
+.table {
+  color: #fff;
+}
+
+.top-space {
+  margin-top: 50px;
+}
