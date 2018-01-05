@@ -97,7 +97,7 @@ app.post(
               return callback(error);
             }
             console.log(user);
-            return result.redirect("/83d2720d-f532-4017-8470-6cae2bbe93f8/new_expense");
+            return result.redirect("/dashboard");
           });
         }
       }
