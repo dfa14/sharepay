@@ -17,10 +17,28 @@ function listBuddies() {
       )
   }
 
-  function insertEvent(label, buddies) {
+  function insertEvent(label, buddies, newbuddies) {
     const uuid=uuidv4();
     const client = new PG.Client();
     client.connect();
+
+    newbuddies.forEach(function(element) {
+        const idUser = uuidv4();
+    
+        return client.query(
+          "INSERT INTO users (id, email, pseudo, password) VALUES ($1, $2, $3, $4);",
+          [idUser, '', element,''])
+          .then (result => {
+            buddies.push(idUser);
+            return result;
+          })
+          .catch(e => {
+          console.warn(e.stack);
+          return e.stack;
+          })
+      }
+    )
+
 
     return client.query(
       "INSERT INTO events (id, label, statut) VALUES ($1, $2, $3);",
