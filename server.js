@@ -241,11 +241,26 @@ app.get("/newevent", function(request, result) {
     console.log("PARAM", request.params.eventID);
     const event = {
       id:request.params.eventID,
-      
     };
     console.log(event);
-    result.render("eventdetail" , {event : event})
-  });
+
+    const client = new PG.Client();
+    client.connect();
+    return client.query(
+      //`SELECT label, user_id, amount, event_id FROM expenses WHERE event_id = '${event.id}';`
+      `SELECT expenses.event_id, expenses.label, expenses.amount, users.pseudo, expenses.id FROM expenses, users WHERE (event_id='${event.id}' AND users.id=expenses.user_id)`
+    )
+    .then((dbResult) => {
+      console.log("-----------juste après select dans expenses");
+      console.log(dbResult);
+      console.log(dbResult.rows);
+    result.render("eventdetail", {event : event, list : dbResult.rows})
+    //result.render("eventdetail", {events:dbResult.rows})
+    });
+});
+
+//    result.render("eventdetail" , {event : event})
+//  });
 
 
 
