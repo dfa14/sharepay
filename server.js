@@ -286,7 +286,6 @@ app.get("/:eventId/new_expense",
     Promise.all(
         [
           event.selectEvent(eventId),
-          users.selectUsers(),
           event.selectEventParticipants(eventId)
         ]
       )
@@ -295,8 +294,7 @@ app.get("/:eventId/new_expense",
 
         result.render("new_expense", {
           event : promiseAllResult[0].rows[0],
-          users : promiseAllResult[1].rows,
-          participants : promiseAllResult[2].rows,
+          participants : promiseAllResult[1],
           user:user
         });
       })
@@ -352,8 +350,8 @@ function createTransactions(expenses) {
   const promises = expenses.map(
     (expense) => {
        return event.selectExpenseBeneficiaries(expense.expense_id)
-        .then(dbResult => {
-          return dbResult.rows.map(beneficiary=>beneficiary.pseudo);
+        .then(beneficiaries => {
+          return beneficiaries.map(beneficiary=>beneficiary.pseudo);
         })
         .then(beneficiaries=> {
           return createTransaction(
@@ -369,7 +367,6 @@ function createTransactions(expenses) {
         return promiseAllResult;
       })
     .then(promiseAllResult=>{
-      client.end();
       return promiseAllResult;
     })
     .catch((dbError) => {
@@ -385,21 +382,22 @@ app.get("/:eventId/balance",
     const eventId = request.params.eventId;
 
     return event.selectEventExpenses(eventId)
-      .then(dbResult=>{
-        return dbResult.rows;
-      })
       .then(expenses=>{
         return createTransactions(expenses);
       })
       .then(transactions=> {
         return event.selectEventParticipants(eventId)
-        .then(dbResult => {
-          return payback(transactions, dbResult.rows.map(participant=>participant.pseudo));
+        .then(participants => {
+          console.log("participants",participants);
+          console.log("transactions",transactions);
+
+          return payback(transactions, participants.map(participant=>participant.pseudo));
         })
         .then(balances => {
           return event.selectEvent(eventId)
-          .then(dbResult => {
-            const currentEvent = dbResult.rows[0];
+          .then(res => {
+            const currentEvent = res.rows[0];
+            console.log("balances",balances);
             result.render("balance", {
               balances:balances,
               event:currentEvent

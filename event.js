@@ -106,9 +106,9 @@ function selectEventParticipants(eventId) {
       [eventId]
     )
     .then(dbResult => {
-      const res = dbResult;
+      const participants = dbResult.rows;
       client.end();
-      return res;
+      return participants;
     });
 }
 
@@ -129,9 +129,9 @@ function selectEventExpenses(eventId) {
     [eventId]
   )
   .then(dbResult => {
-    const res = dbResult;
+    const expenses = dbResult.rows;
     client.end();
-    return res;
+    return expenses;
   });
 
 }
@@ -147,7 +147,7 @@ function selectExpenseBeneficiaries(expenseId) {
     [expenseId]
   )
   .then(dbResult => {
-    const res = dbResult;
+    const res = dbResult.rows;
     client.end();
     return res;
   });
