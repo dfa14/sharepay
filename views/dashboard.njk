@@ -29,10 +29,7 @@
               <td>{{item.label}}</td>
               <td>{{item.statut}}</td>
               <td>
-                <form method="POST" action="/{{item.id}}">
-                  <input type="hidden" name="eventID" value="{{item.id}}" />
-                  <button type="submit"> Details </button>
-                </form>
+                <a class="btn btn-secondary btn-sm" href="/{{item.id}}" role="button">Details</a>
               </td>
             {% endfor %}
           </tbody>
