@@ -7,7 +7,7 @@ function addBuddie(){
     let li = document.createElement("li");
     let input = document.getElementById("buddie");
     //ajouter classe;
-    li.innerHTML += '<input type="checkbox" checked name=' + input.value + '>' + '<input type="hidden" name="buddies" value=NEW_' + input.value +  '/>' + input.value;
+    li.innerHTML += '<input type="checkbox" checked name=' + input.value + '>' + '<input type="hidden" name="buddies" value=NEW_' + input.value +  '>' + input.value;
     input.value = "";
     li.classList.add("list-group-item");
     document.getElementById("buddies-list").appendChild(li);

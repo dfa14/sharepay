@@ -9,11 +9,11 @@
           <tbody>
             {% for item in balances %}
             <tr>
-              <td><B>{{item.from}}</B></td>
+              <td><B>{{ item.from }}</B></td>
               <td> owes </td>
-              <td><B>{{item.value/100}},{{ item.value.toString().slice(-2) }}€</B></td>
+              <td><B>{{ item.value.toString().split(".")[0].slice(0,-2) }},{{ item.value.toString().split(".")[0].slice(-2) }}€</B></td>
               <td> to </td>
-              <td><B>{{item.to}}</B></td>
+              <td><B>{{ item.to }}</B></td>
             {% endfor %}
           </tbody>
         </table>
