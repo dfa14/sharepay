@@ -24,7 +24,7 @@ function listBuddies() {
 
     newbuddies.forEach(function(element) {
         const idUser = uuidv4();
-    
+
         return client.query(
           "INSERT INTO users (id, email, pseudo, password) VALUES ($1, $2, $3, $4);",
           [idUser, '', element,''])
@@ -80,33 +80,66 @@ function insertEventParticipants(uuid,idbuddie) {
 }
 
 
-  function selectEvent(eventId) {
-    const client = new PG.Client();
-    client.connect();
+function selectEvent(eventId) {
+  const client = new PG.Client();
+  client.connect();
 
-    return client.query(
-      "SELECT * FROM events WHERE id=$1",
-      [eventId]
-    )
-  }
+  return client.query(
+    "SELECT * FROM events WHERE id=$1",
+    [eventId]
+  )
+}
 
-  function selectEventParticipants(eventId) {
-    const client = new PG.Client();
-    client.connect();
+function selectEventParticipants(eventId) {
+  const client = new PG.Client();
+  client.connect();
 
-    return client.query(
-      `SELECT u.*
-      FROM event_participants p, users u
-      WHERE event_id=$1
-      AND p.user_id = u.id `,
-      [eventId]
-    )
-  }
+  return client.query(
+    `SELECT u.*
+    FROM event_participants p, users u
+    WHERE event_id=$1
+    AND p.user_id = u.id `,
+    [eventId]
+  )
+}
 
-  module.exports = {
-    listBuddies:listBuddies,
-    insertEvent:insertEvent,
-    insertEventParticipants:insertEventParticipants,
-    selectEvent:selectEvent,
-    selectEventParticipants:selectEventParticipants
-  };
+function selectEventExpenses(eventId) {
+  const client = new PG.Client();
+  client.connect();
+
+  return client.query(
+    `SELECT e.event_id,
+            e.id as expense_id,
+            e.label,
+            e.amount,
+            p.id as payer_id,
+            p.pseudo as payer_pseudo
+    FROM  expenses e, users p
+    WHERE e.event_id=$1
+    AND   e.user_id = p.id`,
+    [eventId]
+  );
+}
+
+function selectExpenseBeneficiaries(expenseId) {
+  const client = new PG.Client();
+  client.connect();
+  return client.query(
+    `SELECT b.pseudo
+    FROM  expense_beneficiaries e, users b
+    WHERE e.expense_id=$1
+    AND   b.id = e.user_id`,
+    [expenseId]
+  );
+}
+
+
+module.exports = {
+  listBuddies:listBuddies,
+  insertEvent:insertEvent,
+  insertEventParticipants:insertEventParticipants,
+  selectEvent:selectEvent,
+  selectEventParticipants:selectEventParticipants,
+  selectEventExpenses:selectEventExpenses,
+  selectExpenseBeneficiaries:selectExpenseBeneficiaries
+};
