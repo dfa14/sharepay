@@ -15,7 +15,7 @@ function findUserByEmail(email) {
       [email]
       )
       .then(res => {
-        console.log(res.rows[0]);
+        client.end();
         return res.rows[0];
       })
       .catch(e => console.error(e.stack)
@@ -44,6 +44,7 @@ function findUser(email,password) {
         } else if (res.rowCount===1) {
           //email+password found in database
          const user=res.rows[0];
+         client.end();
          resolve(user);
         }
         //for any other case, return error
@@ -63,6 +64,7 @@ function insertUser(user) {
     [uuid, user.email, user.password, user.pseudo]
   )
   .then((dbResult) => {
+    client.end();
     return user;
   })
   .catch(error => {
@@ -76,6 +78,10 @@ function selectUsers() {
   client.connect();
 
   return client.query("SELECT * FROM users;")
+  .then((dbResult) => {
+    client.end();
+    return dbResult;
+  })
 }
 
 module.exports = {

@@ -9,6 +9,7 @@ const port = process.env.PORT || 3000;
 const users = require("./users");
 const event = require("./event.js");
 const expense = require("./expense.js");
+const { createTransaction, payback } = require('./payback');
 
 //to setup web server with express
 const app = express();
@@ -166,23 +167,22 @@ app.get("/logout", function(request, result) {
 
 app.get(
   '/dashboard',
+  require("connect-ensure-login").ensureLoggedIn("/"),
 
   function(request, result) {
     const client = new PG.Client();
     client.connect();
     console.log('toto dans le post dashboard1');
     return client.query(
-      "SELECT label, statut, date FROM events;"
+      "SELECT id, label, statut, date FROM events;"
     )
     .then((dbResult) => {
-      console.log(dbResult);
-      console.log('toto dans le post dashboard2');
-      console.log(dbResult.rows);
-    result.render("dashboard", {events:dbResult.rows})
+      const events = dbResult.rows;
+      client.end();
+      result.render("dashboard", {events:events});
     });
   }
 );
-
 
 /////////////////////////////////////////
 // roots for event
@@ -195,6 +195,7 @@ app.post(
     const label = request.body.label
     const activeBuddies = [];
     const newBuddies = [];
+    console.log("idbuddies :", idBuddies);
 
     idBuddies.filter(id => {
       console.log("id : ", request.body);
@@ -219,22 +220,54 @@ app.post(
   }
 );
 
-app.get("/newevent", function(request, result) {
-        event.listBuddies()
-        .then (buddies=>{
-          return result.render("newevent", {
-            buddies : buddies
-          });
-        })
-        .catch(error => {
-          callback(error);
-        });
+app.get("/newevent",
+  require("connect-ensure-login").ensureLoggedIn("/"),
 
-  });
+  function(request, result) {
+    event.listBuddies()
+    .then (buddies=>{
+      return result.render("newevent", {
+        buddies : buddies
+      });
+    })
+    .catch(error => {
+      callback(error);
+    });
 
-  app.get("/eventdetail", function(request, result){
-    result.render("eventdetail")
-  });
+});
+
+
+app.get("/:eventID",
+  require("connect-ensure-login").ensureLoggedIn("/"),
+
+  function(request, result) {
+    return event.selectEvent(request.params.eventID)
+    .then (dbResult=>{
+      return dbResult.rows[0];
+    })
+    .then (event=>{
+      const client = new PG.Client();
+      client.connect();
+      return client.query(
+        `SELECT
+        expenses.event_id, expenses.label, expenses.amount, expenses.id,
+        users.pseudo
+        FROM
+        expenses,
+        users
+        WHERE (expenses.event_id=$1 AND users.id=expenses.user_id)`,
+        [event.id]
+      )
+      .then((dbResult) => {
+        const expenses = dbResult.rows;
+        client.end();
+        result.render("eventdetail", {event : event, expenses : expenses})
+      });
+
+  })
+});
+
+
 
 
 
@@ -242,34 +275,37 @@ app.get("/newevent", function(request, result) {
 // roots for expense
 /////////////////////////////////////////
 
-app.get("/:eventId/new_expense", function(request, result){
+app.get("/:eventId/new_expense",
+  require("connect-ensure-login").ensureLoggedIn("/"),
 
-  const eventId = request.params.eventId;
-  const user = request.user;
+  function(request, result) {
 
-  Promise.all(
-      [
-        event.selectEvent(eventId),
-        users.selectUsers(),
-        event.selectEventParticipants(eventId)
-      ]
-    )
-  .then(function(promiseAllResult) {
-      console.log(promiseAllResult[2]);
+    const eventId = request.params.eventId;
+    const user = request.user;
 
-      result.render("new_expense", {
-        event : promiseAllResult[0].rows[0],
-        users : promiseAllResult[1].rows,
-        participants : promiseAllResult[2].rows,
-        user:user
+    Promise.all(
+        [
+          event.selectEvent(eventId),
+          users.selectUsers(),
+          event.selectEventParticipants(eventId)
+        ]
+      )
+    .then(function(promiseAllResult) {
+        console.log(promiseAllResult[2]);
+
+        result.render("new_expense", {
+          event : promiseAllResult[0].rows[0],
+          users : promiseAllResult[1].rows,
+          participants : promiseAllResult[2].rows,
+          user:user
+        });
+      })
+    .catch(dbError => {
+      result.render("new_expense",{
+        user:user,
+        error:dbError.stack
       });
-    })
-  .catch(dbError => {
-    result.render("new_expense",{
-      user:user,
-      error:dbError.stack
     });
-  });
 });
 
 
@@ -299,7 +335,7 @@ app.post("/:eventId/new_expense", function (request,result) {
       ]
     )
   .then(function(promiseAllResult) {
-      result.redirect(`/:${eventId}`);
+      result.redirect(`/${eventId}`);
     })
   .catch((dbError) => {
     result.render("new_expense",{
@@ -308,6 +344,78 @@ app.post("/:eventId/new_expense", function (request,result) {
     });
   });
 });
+
+/////////////////////////////////////////
+// roots for balance
+/////////////////////////////////////////
+function createTransactions(expenses) {
+  const promises = expenses.map(
+    (expense) => {
+       return event.selectExpenseBeneficiaries(expense.expense_id)
+        .then(dbResult => {
+          return dbResult.rows.map(beneficiary=>beneficiary.pseudo);
+        })
+        .then(beneficiaries=> {
+          return createTransaction(
+            expense.payer_pseudo,
+            expense.amount,
+            beneficiaries
+          );
+        })
+    });
+
+    return Promise.all(promises)
+    .then(function(promiseAllResult) {
+        return promiseAllResult;
+      })
+    .then(promiseAllResult=>{
+      client.end();
+      return promiseAllResult;
+    })
+    .catch((dbError) => {
+      console.warn(dbError.stack);
+    });
+
+}
+
+app.get("/:eventId/balance",
+  require("connect-ensure-login").ensureLoggedIn("/"),
+
+  function(request, result) {
+    const eventId = request.params.eventId;
+
+    return event.selectEventExpenses(eventId)
+      .then(dbResult=>{
+        return dbResult.rows;
+      })
+      .then(expenses=>{
+        return createTransactions(expenses);
+      })
+      .then(transactions=> {
+        return event.selectEventParticipants(eventId)
+        .then(dbResult => {
+          return payback(transactions, dbResult.rows.map(participant=>participant.pseudo));
+        })
+        .then(balances => {
+          return event.selectEvent(eventId)
+          .then(dbResult => {
+            const currentEvent = dbResult.rows[0];
+            result.render("balance", {
+              balances:balances,
+              event:currentEvent
+            });
+          })
+        })
+      })
+      .catch(e=>{
+        console.warn(e.stack);
+        result.render("balance",{
+          error:e.stack
+        });
+      });
+  }
+);
+
 
 
 app.listen(port, function () {
