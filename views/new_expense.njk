@@ -41,8 +41,7 @@
           </div>
           <div class="col-md-8 text-left">
             <select class="custom-select form-control pb-5" name="payer" multiple>
-              <option selected value="{{user.id}}">{{ user.pseudo }}</option>
-              {% for item in users %}
+              {% for item in participants %}
                 <option value="{{item.id}}">{{ item.pseudo }}</option>
               {% endfor %}
             </select>
