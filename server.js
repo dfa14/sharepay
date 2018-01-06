@@ -9,6 +9,7 @@ const port = process.env.PORT || 3000;
 const users = require("./users");
 const event = require("./event.js");
 const expense = require("./expense.js");
+const { createTransaction, payback } = require('./payback');
 
 //to setup web server with express
 const app = express();
@@ -312,10 +313,80 @@ app.post("/:eventId/new_expense", function (request,result) {
 /////////////////////////////////////////
 // roots for balance
 /////////////////////////////////////////
+function createTransactions(expenses) {
+  const promises = expenses.map(
+    (expense) => {
+       return event.selectExpenseBeneficiaries(expense.expense_id)
+        .then(dbResult => {
+          return dbResult.rows.map(beneficiary=>beneficiary.pseudo);
+        })
+        .then(beneficiaries=> {
+          return createTransaction(
+            expense.payer_pseudo,
+            expense.amount,
+            beneficiaries
+          );
+        })
+    });
+
+    return Promise.all(promises)
+    .then(function(promiseAllResult) {
+        return promiseAllResult;
+      })
+    .catch((dbError) => {
+      console.warn(dbError.stack);
+    });
+
+}
 
 app.get("/:eventId/balance", function(request, result){
 
   const eventId = request.params.eventId;
+
+  return event.selectEventExpenses(eventId)
+    .then(dbResult=>{
+      return dbResult.rows;
+    })
+    .then(expenses=>{
+      console.log("Expenses:", expenses);
+      return expenses;
+    })
+    .then(expenses=>{
+      return createTransactions(expenses);
+    })
+    .then(transactions=> {
+      console.log("Transactions",transactions);
+      return transactions;
+    })
+    .then(transactions=> {
+
+      return event.selectEventParticipants(eventId)
+      .then(dbResult => {
+        return payback(transactions, dbResult.rows.map(participant=>participant.pseudo));
+      })
+      .then(balances => {
+        console.log(balances);
+        return balances;
+      })
+      .then(balances => {
+        // [ { from: 'Ain', to: 'Allier', value: 42000 },
+        //   { from: 'Toinette', to: 'Allier', value: 30000 } ]
+        return event.selectEvent(eventId)
+        .then(dbResult => {
+          const currentEvent = dbResult.rows[0];
+          result.render("balance", {
+            balances:balances,
+            event:currentEvent
+          });
+        })
+      })
+    })
+    .catch(e=>{
+      console.warn(e.stack);
+      result.render("balance",{
+        error:e.stack
+      });
+    })
 
 });
 

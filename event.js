@@ -103,26 +103,43 @@ function selectEventParticipants(eventId) {
   )
 }
 
-
 function selectEventExpenses(eventId) {
   const client = new PG.Client();
   client.connect();
 
   return client.query(
-    `SELECT u.*
-    FROM expenses e, expense_beneficiaries b
+    `SELECT e.event_id,
+            e.id as expense_id,
+            e.label,
+            e.amount,
+            p.id as payer_id,
+            p.pseudo as payer_pseudo
+    FROM  expenses e, users p
     WHERE e.event_id=$1
-    AND   b.expense_id = e.id `,
+    AND   e.user_id = p.id`,
     [eventId]
-  )
+  );
+}
+
+function selectExpenseBeneficiaries(expenseId) {
+  const client = new PG.Client();
+  client.connect();
+  return client.query(
+    `SELECT b.pseudo
+    FROM  expense_beneficiaries e, users b
+    WHERE e.expense_id=$1
+    AND   b.id = e.user_id`,
+    [expenseId]
+  );
 }
 
 
-  module.exports = {
-    listBuddies:listBuddies,
-    insertEvent:insertEvent,
-    insertEventParticipants:insertEventParticipants,
-    selectEvent:selectEvent,
-    selectEventParticipants:selectEventParticipants,
-    selectEventExpenses:selectEventExpenses
-  };
+module.exports = {
+  listBuddies:listBuddies,
+  insertEvent:insertEvent,
+  insertEventParticipants:insertEventParticipants,
+  selectEvent:selectEvent,
+  selectEventParticipants:selectEventParticipants,
+  selectEventExpenses:selectEventExpenses,
+  selectExpenseBeneficiaries:selectExpenseBeneficiaries
+};

@@ -1,14 +1,44 @@
 {% extends "layout.njk" %}
 
 {% block content %}
-
-<div class="container justify-content-center">
-
-    <div class="text-left pt-4">
-      <h4> Balance for event : {{ event.label }}</h4>
+<div>
+  <h2 class="text-center top-space"> Payback status for event: {{ event.label }} </h2>
+  <div class ="container top-space">
+    <div class ="container">
+        <table class="table">
+          <tbody>
+            {% for item in balances %}
+            <tr>
+              <td><B>{{item.from}}</B></td>
+              <td> owes </td>
+              <td><B>{{item.value/100}},{{ item.value.toString().slice(-2) }}€</B></td>
+              <td> to </td>
+              <td><B>{{item.to}}</B></td>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    <!--<div class="row justify-content-center">
+      <div class="col-4 titlegrid">
+        EVENT LABEL
+      </div>
+      <div class="col-2 titlegrid">
+        EVENT STATUS
+      </div>
     </div>
+    {% for item in tempevents %}
+      <div class="row justify-content-center">
+        <div class="col-4 grid">
+          {{item.title}}
+        </div>
 
-
+        <div class="col-2 grid">
+          {{item.status}}
+          <button href="/"> Details </button>
+        </div>
+      </div>
+    {% endfor %}
+  </div>-->
 </div>
 
 {% endblock %}
