@@ -2,44 +2,43 @@
 
 {% block content %}
 <div>
-
-  <h2> Welcome on your dashboard events </h2>
-  <div class="row pt-3">
-    <div class="col-lg-2">
-      <button> + Add an activity </button>
-    </div>
-    <div class="col-lg-2">
-      <button> History </button>
+  <h2 class="text-center top-space"> Welcome on your dashboard events </h2>
+  <div class ="container top-space">
+    <div class="row justify-content-center">
+      <!--<button type="button" class="btn btn-secondary col-2 offset-0">ADD AN ACTIVITY</button>-->
+      <input type="button" class="btn btn-secondary col-2 offset-1" value="ADD AN ACTIVITY" onclick="location.href = '/newevent';">
+      <button type="button" class="btn btn-secondary col-2 offset-1">HISTORY</button>
     </div>
   </div>
-
-
-  <div class ="container">
+  <div class ="container top-space">
     <div class="row justify-content-center">
-      <h4> Events </h4>
+      <h4> EVENTS </h4>
     </div>
-    <div class="row justify-content-center">
-      <div class="col-4 titlegrid">
-        Event Label
+    <div class ="container">
+        <table class="table">
+          <thead class="thead-light">
+            <tr>
+              <th scope="col">EVENT LABEL</th>
+              <th scope="col">EVENT STATUS</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in events %}
+            <tr>
+              <td>{{item.label}}</td>
+              <td>{{item.statut}}</td>
+              <td>
+                <form method="POST" action="/eventdetail">
+                  <input type="hidden" name="eventid" value="{{item.id}}" />
+                  <button type="submit"> Details </button>
+                </form>
+              </td>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
-      <div class="col-2 titlegrid">
-        Event Status
-      </div>
-    </div>
-    {% for item in events %}
-      <div class="row justify-content-center">
-        <div class="col-4 grid">
-          {{item.label}}
-        </div>
-        <div class="col-2 grid">
-          {{item.statut}}
 
-          <a href="/eventdetail">Details</a>
-        </div>
-      </div>
-    {% endfor %}
-    </div>
-  </div>
 </div>
 
 {% endblock %}

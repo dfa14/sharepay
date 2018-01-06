@@ -82,19 +82,18 @@ function insertEventParticipants(uuid,idbuddie) {
 }
 
 
-  function selectEvent(eventId) {
-    const client = new PG.Client();
-    client.connect();
+function selectEvent(eventId) {
+  const client = new PG.Client();
+  client.connect();
 
-    return client.query(
-      "SELECT * FROM events WHERE id=$1",
-      [eventId]
-    )
-    client.close();
-  }
+  return client.query(
+    "SELECT * FROM events WHERE id=$1",
+    [eventId]
+  )
+}
 
-  function selectEventParticipants(eventId) {
-    const client = new PG.Client();
+function selectEventParticipants(eventId) {
+  const client = new PG.Client();
     client.connect();
 
     return client.query(
@@ -105,12 +104,46 @@ function insertEventParticipants(uuid,idbuddie) {
       [eventId]
     )
     client.close();
-  }
+}
 
-  module.exports = {
-    listBuddies:listBuddies,
-    insertEvent:insertEvent,
-    insertEventParticipants:insertEventParticipants,
-    selectEvent:selectEvent,
-    selectEventParticipants:selectEventParticipants
-  };
+function selectEventExpenses(eventId) {
+  const client = new PG.Client();
+  client.connect();
+
+  return client.query(
+    `SELECT e.event_id,
+            e.id as expense_id,
+            e.label,
+            e.amount,
+            p.id as payer_id,
+            p.pseudo as payer_pseudo
+    FROM  expenses e, users p
+    WHERE e.event_id=$1
+    AND   e.user_id = p.id`,
+    [eventId]
+  );
+}
+
+function selectExpenseBeneficiaries(expenseId) {
+  const client = new PG.Client();
+  client.connect();
+  return client.query(
+    `SELECT b.pseudo
+    FROM  expense_beneficiaries e, users b
+    WHERE e.expense_id=$1
+    AND   b.id = e.user_id`,
+    [expenseId]
+  );
+}
+
+
+
+module.exports = {
+  listBuddies:listBuddies,
+  insertEvent:insertEvent,
+  insertEventParticipants:insertEventParticipants,
+  selectEvent:selectEvent,
+  selectEventParticipants:selectEventParticipants,
+  selectEventExpenses:selectEventExpenses,
+  selectExpenseBeneficiaries:selectExpenseBeneficiaries
+};
