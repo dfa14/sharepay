@@ -2,7 +2,7 @@
 
 {% block content %}
 <div>
-  <h2 class="text-center top-space"> Detail of the event number {{event.id}} </h2>
+  <h2 class="text-center top-space"> Detail of the event : {{label}} </h2>
   <div class ="container top-space">
     <div class="row justify-content-center">
       <!--<button type="button" class="btn btn-secondary col-2 offset-0">ADD AN ACTIVITY</button>-->
@@ -11,8 +11,6 @@
       <input type="button" class="btn btn-secondary col-2 offset-1" value="BACK DASHBOARD" onclick="location.href = '/dashboard';">
     </div>
   </div>
-
-  <!--<span> {{event.id}} </span>-->
 <span>
 
   <div class ="container">
@@ -21,7 +19,7 @@
           <tr>
             <th scope="col">WHO</th>
             <th scope="col">PAY</th>
-            <th scope="col">ID_EXPENSE FOR check</th>
+            <th scope="col">EVENT</th>
           </tr>
         </thead>
         <tbody>
@@ -29,7 +27,7 @@
           <tr>
             <td>{{item.pseudo}}</td>
             <td>{{item.amount}}</td>
-            <td>{{item.id}}</td>
+            <td>{{item.label}}</td>
           </tr>
           {% endfor %}
         </tbody>
