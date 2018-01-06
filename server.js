@@ -236,32 +236,28 @@ app.get("/newevent",
 
 });
 
-app.get("/eventdetail",
+
+app.get("/:eventID", function(request, result){
   require("connect-ensure-login").ensureLoggedIn("/"),
 
-  function(request, result){
-    result.render("eventdetail")
-});
+  console.log("PARAM", request.params.eventID);
+  const event = {
+    id:request.params.eventID,
+  };
+  console.log(event);
 
-  app.post("/:eventID", function(request, result){
-    console.log("PARAM", request.params.eventID);
-    const event = {
-      id:request.params.eventID,
-    };
-    console.log(event);
-
-    const client = new PG.Client();
-    client.connect();
-    return client.query(
-      //`SELECT label, user_id, amount, event_id FROM expenses WHERE event_id = '${event.id}';`
-      //`SELECT expenses.event_id, expenses.label, expenses.amount, users.pseudo, expenses.id FROM expenses, users WHERE (event_id='${event.id}' AND users.id=expenses.user_id)`
-      `SELECT expenses.event_id, expenses.label, expenses.amount, users.pseudo, expenses.id, events.label FROM expenses, users, events WHERE (event_id='${event.id}' AND users.id=expenses.user_id AND expenses.event_id = events.id)`
-    )
-    .then((dbResult) => {
-      const list = dbResult.rows;
-      client.end();
-      result.render("eventdetail", {event : event, list : list})
-    });
+  const client = new PG.Client();
+  client.connect();
+  return client.query(
+    //`SELECT label, user_id, amount, event_id FROM expenses WHERE event_id = '${event.id}';`
+    //`SELECT expenses.event_id, expenses.label, expenses.amount, users.pseudo, expenses.id FROM expenses, users WHERE (event_id='${event.id}' AND users.id=expenses.user_id)`
+    `SELECT expenses.event_id, expenses.label, expenses.amount, users.pseudo, expenses.id, events.label FROM expenses, users, events WHERE (event_id='${event.id}' AND users.id=expenses.user_id AND expenses.event_id = events.id)`
+  )
+  .then((dbResult) => {
+    const list = dbResult.rows;
+    client.end();
+    result.render("eventdetail", {event : event, list : list})
+  });
 });
 
 
@@ -332,7 +328,7 @@ app.post("/:eventId/new_expense", function (request,result) {
       ]
     )
   .then(function(promiseAllResult) {
-      result.redirect(`/:${eventId}`);
+      result.redirect(`/${eventId}`);
     })
   .catch((dbError) => {
     result.render("new_expense",{
