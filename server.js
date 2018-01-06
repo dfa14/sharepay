@@ -172,7 +172,7 @@ app.get(
     client.connect();
     console.log('toto dans le post dashboard1');
     return client.query(
-      "SELECT label, statut, date FROM events;"
+      "SELECT id, label, statut, date FROM events;"
     )
     .then((dbResult) => {
       console.log(dbResult);
@@ -235,10 +235,18 @@ app.get("/newevent", function(request, result) {
     result.render("eventdetail")
   });
 
-  app.post("/eventdetail", function(request, result){
-    const eventID = request.eventid;
-    result.render("eventdetail" , {message : `This is the detail of your event : ${event}`})
+  app.post("/:eventID", function(request, result){
+    console.log("PARAM", request.params.eventID);
+    const event = {
+      id:request.params.eventID,
+    };
+    console.log(event);
+    result.render("eventdetail" , {event : event})
   });
+
+
+
+
 
 /////////////////////////////////////////
 // roots for expense

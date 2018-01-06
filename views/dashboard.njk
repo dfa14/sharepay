@@ -29,8 +29,8 @@
               <td>{{item.label}}</td>
               <td>{{item.statut}}</td>
               <td>
-                <form method="POST" action="/eventdetail">
-                  <input type="hidden" name="eventid" value="{{item.id}}" />
+                <form method="POST" action="/{{item.id}}">
+                  <input type="hidden" name="eventID" value="{{item.id}}" />
                   <button type="submit"> Details </button>
                 </form>
               </td>
