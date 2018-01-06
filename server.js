@@ -237,27 +237,34 @@ app.get("/newevent",
 });
 
 
-app.get("/:eventID", function(request, result){
+app.get("/:eventID",
   require("connect-ensure-login").ensureLoggedIn("/"),
 
-  console.log("PARAM", request.params.eventID);
-  const event = {
-    id:request.params.eventID,
-  };
-  console.log(event);
+  function(request, result) {
+    return event.selectEvent(request.params.eventID)
+    .then (dbResult=>{
+      return dbResult.rows[0];
+    })
+    .then (event=>{
+      const client = new PG.Client();
+      client.connect();
+      return client.query(
+        `SELECT
+        expenses.event_id, expenses.label, expenses.amount, expenses.id,
+        users.pseudo
+        FROM
+        expenses,
+        users
+        WHERE (expenses.event_id=$1 AND users.id=expenses.user_id)`,
+        [event.id]
+      )
+      .then((dbResult) => {
+        const expenses = dbResult.rows;
+        client.end();
+        result.render("eventdetail", {event : event, expenses : expenses})
+      });
 
-  const client = new PG.Client();
-  client.connect();
-  return client.query(
-    //`SELECT label, user_id, amount, event_id FROM expenses WHERE event_id = '${event.id}';`
-    //`SELECT expenses.event_id, expenses.label, expenses.amount, users.pseudo, expenses.id FROM expenses, users WHERE (event_id='${event.id}' AND users.id=expenses.user_id)`
-    `SELECT expenses.event_id, expenses.label, expenses.amount, users.pseudo, expenses.id, events.label FROM expenses, users, events WHERE (event_id='${event.id}' AND users.id=expenses.user_id AND expenses.event_id = events.id)`
-  )
-  .then((dbResult) => {
-    const list = dbResult.rows;
-    client.end();
-    result.render("eventdetail", {event : event, list : list})
-  });
+  })
 });
 
 
