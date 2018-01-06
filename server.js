@@ -254,18 +254,15 @@ app.get("/eventdetail",
     client.connect();
     return client.query(
       //`SELECT label, user_id, amount, event_id FROM expenses WHERE event_id = '${event.id}';`
-      `SELECT expenses.event_id, expenses.label, expenses.amount, users.pseudo, expenses.id FROM expenses, users WHERE (event_id='${event.id}' AND users.id=expenses.user_id)`
+      //`SELECT expenses.event_id, expenses.label, expenses.amount, users.pseudo, expenses.id FROM expenses, users WHERE (event_id='${event.id}' AND users.id=expenses.user_id)`
+      `SELECT expenses.event_id, expenses.label, expenses.amount, users.pseudo, expenses.id, events.label FROM expenses, users, events WHERE (event_id='${event.id}' AND users.id=expenses.user_id AND expenses.event_id = events.id)`
     )
     .then((dbResult) => {
       const list = dbResult.rows;
       client.end();
       result.render("eventdetail", {event : event, list : list})
-    //result.render("eventdetail", {events:dbResult.rows})
     });
 });
-
-//    result.render("eventdetail" , {event : event})
-//  });
 
 
 

@@ -1,6 +1,7 @@
 const PG = require("pg");
 const uuidv4 = require("uuid/v4");
 
+
 function listBuddies() {
   const client = new PG.Client();
   client.connect();
@@ -68,6 +69,7 @@ function insertEventParticipants(uuid,idbuddie) {
   )
     .then(res => {
       //console.log("pseudo 1:", res.rows);
+      client.end();
       return res;
     })
     .catch(e => {
