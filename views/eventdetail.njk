@@ -2,7 +2,7 @@
 
 {% block content %}
 <div>
-  <h2 class="text-center top-space"> Detail of the event : {{label}} </h2>
+  <h2 class="text-center top-space"> Detail of the event : {{event.label}} </h2>
   <div class ="container top-space">
     <div class="row justify-content-center">
       <!--<button type="button" class="btn btn-secondary col-2 offset-0">ADD AN ACTIVITY</button>-->
@@ -23,7 +23,7 @@
           </tr>
         </thead>
         <tbody>
-          {% for item in list %}
+          {% for item in expenses %}
           <tr>
             <td>{{item.pseudo}}</td>
             <td>{{item.amount}}</td>
