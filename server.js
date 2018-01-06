@@ -177,10 +177,9 @@ app.get(
       "SELECT id, label, statut, date FROM events;"
     )
     .then((dbResult) => {
-      console.log(dbResult);
-      console.log('toto dans le post dashboard2');
-      console.log(dbResult.rows);
-    result.render("dashboard", {events:dbResult.rows})
+      const events = dbResult.rows;
+      client.end();
+      result.render("dashboard", {events:events});
     });
   }
 );
@@ -258,10 +257,9 @@ app.get("/eventdetail",
       `SELECT expenses.event_id, expenses.label, expenses.amount, users.pseudo, expenses.id FROM expenses, users WHERE (event_id='${event.id}' AND users.id=expenses.user_id)`
     )
     .then((dbResult) => {
-      console.log("-----------juste après select dans expenses");
-      console.log(dbResult);
-      console.log(dbResult.rows);
-    result.render("eventdetail", {event : event, list : dbResult.rows})
+      const list = dbResult.rows;
+      client.end();
+      result.render("eventdetail", {event : event, list : list})
     //result.render("eventdetail", {events:dbResult.rows})
     });
 });
@@ -370,6 +368,10 @@ function createTransactions(expenses) {
     .then(function(promiseAllResult) {
         return promiseAllResult;
       })
+    .then(promiseAllResult=>{
+      client.end();
+      return promiseAllResult;
+    })
     .catch((dbError) => {
       console.warn(dbError.stack);
     });
