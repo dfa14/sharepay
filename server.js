@@ -239,6 +239,7 @@ app.get("/newevent", function(request, result) {
     console.log("PARAM", request.params.eventID);
     const event = {
       id:request.params.eventID,
+      
     };
     console.log(event);
     result.render("eventdetail" , {event : event})
