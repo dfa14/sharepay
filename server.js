@@ -195,6 +195,7 @@ app.post(
     const label = request.body.label
     const activeBuddies = [];
     const newBuddies = [];
+    console.log("idbuddies :", idBuddies);
 
     idBuddies.filter(id => {
       console.log("id : ", request.body);

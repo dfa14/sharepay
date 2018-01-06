@@ -15,6 +15,7 @@ function listBuddies() {
       })
       .catch(e => console.error(e.stack)
       )
+      client.close();
   }
 
   function insertEvent(label, buddies, newbuddies) {
@@ -24,7 +25,7 @@ function listBuddies() {
 
     newbuddies.forEach(function(element) {
         const idUser = uuidv4();
-    
+
         return client.query(
           "INSERT INTO users (id, email, pseudo, password) VALUES ($1, $2, $3, $4);",
           [idUser, '', element,''])
@@ -57,7 +58,7 @@ function listBuddies() {
         return e.stack;
       }
       )
-
+      client.close();
   }
 
 function insertEventParticipants(uuid,idbuddie) {
@@ -77,6 +78,7 @@ function insertEventParticipants(uuid,idbuddie) {
       return e.stack;
     }
     )
+    client.close();
 }
 
 
@@ -88,6 +90,7 @@ function insertEventParticipants(uuid,idbuddie) {
       "SELECT * FROM events WHERE id=$1",
       [eventId]
     )
+    client.close();
   }
 
   function selectEventParticipants(eventId) {
@@ -101,6 +104,7 @@ function insertEventParticipants(uuid,idbuddie) {
       AND p.user_id = u.id `,
       [eventId]
     )
+    client.close();
   }
 
   module.exports = {

@@ -7,9 +7,9 @@
         let li = document.createElement("li");
         let input = document.getElementById("buddie");
         //ajouter classe;
-        li.innerHTML += '<input type="checkbox" checked name=' + input.value + '>' + '<input type="hidden" name="buddies" value=NEW_' + input.value +  '/>' + input.value;
+        li.innerHTML += '<input type="checkbox" class="custom-control-input" checked name=' + input.value + '>' + '<input type="hidden" name="buddies" value=NEW_' + input.value +  '/>' + input.value;
         input.value = "";
-        li.classList.add("list-group-item");
+        li.classList.add("list-group-item list-group-item-action");
         document.getElementById("buddies-list").appendChild(li);
     }
 </script>
@@ -20,7 +20,6 @@
 
 <div class="container justify-content-center">
   <form method="POST" action="/newevent">
-    Describe your activity
     <div class="row justify-content-center">
       <div class="col-2  text-right">
         <label for="password"> Your activity name </label>
@@ -31,26 +30,28 @@
     </div>
 
 
-    Add some buddies
     <div class="row justify-content-center">
-      <div class="col-4 text-left">
-        <input type="text" id="buddie"/><input type="button" id="btnAdd" value="Add" onclick="addBuddie()" />
+      <div class="col-2 text-right">
+        <label for="password"> Add some buddies </label>
+      </div>
+        <div class="col-4 text-left">
+        <input type="text" id="buddie"/><input type="button" class="btn btn-primary" id="btnAdd" value="Add" onclick="addBuddie()" />
       </div>
     </div>
 
     <ul id="buddies-list" class="list-group">
       {% for buddie in buddies %}
-      <li class="list-group-item">
-        <input type="checkbox" checked name="{{buddie.id}}" />
+      <li class="list-group-item list-group-item-action">
+        <input type="checkbox"  checked name="{{buddie.id}}" />
         <input type="hidden" name="buddies" value="{{buddie.id}}" />
-        <span> {{buddie.pseudo}} </span>
+        <label class="text-primary"> {{buddie.pseudo}} </label>
       </li>
       {% endfor %}
     </ul>
 
     <div class="row pt-3">
       <div class="col text-center">
-        <button type="submit"> Create </button>
+        <input type="submit" class="btn btn-primary" value="Create" </>
       </div>
     </div>
 
