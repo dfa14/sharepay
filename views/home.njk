@@ -1,0 +1,45 @@
+{% extends "layout.njk" %}
+
+{% block content %}
+
+<div class="container justify-content-center">
+  <form method="POST" action="/">
+    <div class="row pt-5 justify-content-center">
+      <div class="col-2 text-right">
+        <label for="email"> Your email </label>
+      </div>
+      <div class="col-4 text-left">
+        <input type="text" name="username" maxlength="150"/>
+      </div>
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-2  text-right">
+        <label for="password"> Your password </label>
+      </div>
+      <div class="col-4 text-left">
+        <input type="password" name="password"/>
+      </div>
+    </div>
+    <div class="row pt-3">
+      <div class="col text-center">
+        <button type="submit"> login </button>
+      </div>
+    </div>
+  </form>
+  <div class="row pt-3">
+    <div class="col text-center">
+      <p class="error">{{ error }} </p>
+      </h6>
+    </div>
+  </div>
+  <div class="row pt-3">
+    <div class="col text-center">
+      <h6> New to Sharepay ?
+      <a href="/new_account">Click here</a>
+      </h6>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,60 @@
+
+{% extends "layout.njk" %}
+
+{% block js %}
+<script>
+    function addBuddie(){
+        let li = document.createElement("li");
+        let input = document.getElementById("buddie");
+        //ajouter classe;
+        li.innerHTML += '<input type="checkbox" checked name=' + input.value + '>' + '<input type="hidden" name="buddies" value=NEW_' + input.value +  '/>' + input.value;
+        input.value = "";
+        li.classList.add("list-group-item");
+        document.getElementById("buddies-list").appendChild(li);
+    }
+</script>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container justify-content-center">
+  <form method="POST" action="/newevent">
+    Describe your activity
+    <div class="row justify-content-center">
+      <div class="col-2  text-right">
+        <label for="password"> Your activity name </label>
+      </div>
+      <div class="col-4 text-left">
+        <input type="text" name="label"/>
+      </div>
+    </div>
+
+
+    Add some buddies
+    <div class="row justify-content-center">
+      <div class="col-4 text-left">
+        <input type="text" id="buddie"/><input type="button" id="btnAdd" value="Add" onclick="addBuddie()" />
+      </div>
+    </div>
+
+    <ul id="buddies-list" class="list-group">
+      {% for buddie in buddies %}
+      <li class="list-group-item">
+        <input type="checkbox" checked name="{{buddie.id}}" />
+        <input type="hidden" name="buddies" value="{{buddie.id}}" />
+        <span> {{buddie.pseudo}} </span>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <div class="row pt-3">
+      <div class="col text-center">
+        <button type="submit"> Create </button>
+      </div>
+    </div>
+
+  </form>
+
+
+{% endblock %}
