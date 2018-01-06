@@ -15,6 +15,7 @@ function listBuddies() {
       })
       .catch(e => console.error(e.stack)
       )
+      client.close();
   }
 
   function insertEvent(label, buddies, newbuddies) {
@@ -57,7 +58,7 @@ function listBuddies() {
         return e.stack;
       }
       )
-
+      client.close();
   }
 
 function insertEventParticipants(uuid,idbuddie) {
@@ -77,6 +78,7 @@ function insertEventParticipants(uuid,idbuddie) {
       return e.stack;
     }
     )
+    client.close();
 }
 
 
@@ -92,15 +94,16 @@ function selectEvent(eventId) {
 
 function selectEventParticipants(eventId) {
   const client = new PG.Client();
-  client.connect();
+    client.connect();
 
-  return client.query(
-    `SELECT u.*
-    FROM event_participants p, users u
-    WHERE event_id=$1
-    AND p.user_id = u.id `,
-    [eventId]
-  )
+    return client.query(
+      `SELECT u.*
+      FROM event_participants p, users u
+      WHERE event_id=$1
+      AND p.user_id = u.id `,
+      [eventId]
+    )
+    client.close();
 }
 
 function selectEventExpenses(eventId) {
@@ -132,6 +135,7 @@ function selectExpenseBeneficiaries(expenseId) {
     [expenseId]
   );
 }
+
 
 
 module.exports = {
