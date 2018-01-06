@@ -167,6 +167,7 @@ app.get("/logout", function(request, result) {
 
 app.get(
   '/dashboard',
+  require("connect-ensure-login").ensureLoggedIn("/"),
 
   function(request, result) {
     const client = new PG.Client();
@@ -220,22 +221,28 @@ app.post(
   }
 );
 
-app.get("/newevent", function(request, result) {
-        event.listBuddies()
-        .then (buddies=>{
-          return result.render("newevent", {
-            buddies : buddies
-          });
-        })
-        .catch(error => {
-          callback(error);
-        });
+app.get("/newevent",
+  require("connect-ensure-login").ensureLoggedIn("/"),
 
-  });
+  function(request, result) {
+    event.listBuddies()
+    .then (buddies=>{
+      return result.render("newevent", {
+        buddies : buddies
+      });
+    })
+    .catch(error => {
+      callback(error);
+    });
 
-  app.get("/eventdetail", function(request, result){
+});
+
+app.get("/eventdetail",
+  require("connect-ensure-login").ensureLoggedIn("/"),
+
+  function(request, result){
     result.render("eventdetail")
-  });
+});
 
   app.post("/:eventID", function(request, result){
     console.log("PARAM", request.params.eventID);
@@ -270,34 +277,37 @@ app.get("/newevent", function(request, result) {
 // roots for expense
 /////////////////////////////////////////
 
-app.get("/:eventId/new_expense", function(request, result){
+app.get("/:eventId/new_expense",
+  require("connect-ensure-login").ensureLoggedIn("/"),
 
-  const eventId = request.params.eventId;
-  const user = request.user;
+  function(request, result) {
 
-  Promise.all(
-      [
-        event.selectEvent(eventId),
-        users.selectUsers(),
-        event.selectEventParticipants(eventId)
-      ]
-    )
-  .then(function(promiseAllResult) {
-      console.log(promiseAllResult[2]);
+    const eventId = request.params.eventId;
+    const user = request.user;
 
-      result.render("new_expense", {
-        event : promiseAllResult[0].rows[0],
-        users : promiseAllResult[1].rows,
-        participants : promiseAllResult[2].rows,
-        user:user
+    Promise.all(
+        [
+          event.selectEvent(eventId),
+          users.selectUsers(),
+          event.selectEventParticipants(eventId)
+        ]
+      )
+    .then(function(promiseAllResult) {
+        console.log(promiseAllResult[2]);
+
+        result.render("new_expense", {
+          event : promiseAllResult[0].rows[0],
+          users : promiseAllResult[1].rows,
+          participants : promiseAllResult[2].rows,
+          user:user
+        });
+      })
+    .catch(dbError => {
+      result.render("new_expense",{
+        user:user,
+        error:dbError.stack
       });
-    })
-  .catch(dbError => {
-    result.render("new_expense",{
-      user:user,
-      error:dbError.stack
     });
-  });
 });
 
 
@@ -366,56 +376,43 @@ function createTransactions(expenses) {
 
 }
 
-app.get("/:eventId/balance", function(request, result){
+app.get("/:eventId/balance",
+  require("connect-ensure-login").ensureLoggedIn("/"),
 
-  const eventId = request.params.eventId;
+  function(request, result) {
+    const eventId = request.params.eventId;
 
-  return event.selectEventExpenses(eventId)
-    .then(dbResult=>{
-      return dbResult.rows;
-    })
-    .then(expenses=>{
-      console.log("Expenses:", expenses);
-      return expenses;
-    })
-    .then(expenses=>{
-      return createTransactions(expenses);
-    })
-    .then(transactions=> {
-      console.log("Transactions",transactions);
-      return transactions;
-    })
-    .then(transactions=> {
-
-      return event.selectEventParticipants(eventId)
-      .then(dbResult => {
-        return payback(transactions, dbResult.rows.map(participant=>participant.pseudo));
+    return event.selectEventExpenses(eventId)
+      .then(dbResult=>{
+        return dbResult.rows;
       })
-      .then(balances => {
-        console.log(balances);
-        return balances;
+      .then(expenses=>{
+        return createTransactions(expenses);
       })
-      .then(balances => {
-        // [ { from: 'Ain', to: 'Allier', value: 42000 },
-        //   { from: 'Toinette', to: 'Allier', value: 30000 } ]
-        return event.selectEvent(eventId)
+      .then(transactions=> {
+        return event.selectEventParticipants(eventId)
         .then(dbResult => {
-          const currentEvent = dbResult.rows[0];
-          result.render("balance", {
-            balances:balances,
-            event:currentEvent
-          });
+          return payback(transactions, dbResult.rows.map(participant=>participant.pseudo));
+        })
+        .then(balances => {
+          return event.selectEvent(eventId)
+          .then(dbResult => {
+            const currentEvent = dbResult.rows[0];
+            result.render("balance", {
+              balances:balances,
+              event:currentEvent
+            });
+          })
         })
       })
-    })
-    .catch(e=>{
-      console.warn(e.stack);
-      result.render("balance",{
-        error:e.stack
+      .catch(e=>{
+        console.warn(e.stack);
+        result.render("balance",{
+          error:e.stack
+        });
       });
-    })
-
-});
+  }
+);
 
 
 
