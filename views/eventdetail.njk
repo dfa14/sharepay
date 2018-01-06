@@ -11,8 +11,9 @@
       <input type="button" class="btn btn-secondary col-2 offset-1" value="BACK DASHBOARD" onclick="location.href = '/dashboard';">
     </div>
   </div>
-  <!--<span> {{event.id}} </span>-->
 
+  <!--<span> {{event.id}} </span>-->
+<span>
 
   <div class ="container">
       <table class="table">
@@ -20,14 +21,15 @@
           <tr>
             <th scope="col">WHO</th>
             <th scope="col">PAY</th>
-            <th scope="col">WHEN</th>
+            <th scope="col">ID_EXPENSE FOR check</th>
           </tr>
         </thead>
         <tbody>
-          {% for item in expenses %}
+          {% for item in list %}
           <tr>
-            <td>{{item.user_id}}</td>
+            <td>{{item.pseudo}}</td>
             <td>{{item.amount}}</td>
+            <td>{{item.id}}</td>
           </tr>
           {% endfor %}
         </tbody>
