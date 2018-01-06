@@ -11,11 +11,11 @@ function listBuddies() {
     )
       .then(res => {
         //console.log("pseudo 1:", res.rows);
+        client.end();
         return res.rows;
       })
       .catch(e => console.error(e.stack)
       )
-      client.close();
   }
 
   function insertEvent(label, buddies, newbuddies) {
@@ -31,6 +31,7 @@ function listBuddies() {
           [idUser, '', element,''])
           .then (result => {
             buddies.push(idUser);
+            client.end();
             return result;
           })
           .catch(e => {
@@ -47,6 +48,7 @@ function listBuddies() {
     )
       .then(res => {
         //console.log("pseudo 1:", res.rows);
+        client.end();
         return res;
       })
       .then(result => {
@@ -58,7 +60,7 @@ function listBuddies() {
         return e.stack;
       }
       )
-      client.close();
+      client.end();
   }
 
 function insertEventParticipants(uuid,idbuddie) {
@@ -71,6 +73,7 @@ function insertEventParticipants(uuid,idbuddie) {
   )
     .then(res => {
       //console.log("pseudo 1:", res.rows);
+      client.end();
       return res;
     })
     .catch(e => {
@@ -78,7 +81,6 @@ function insertEventParticipants(uuid,idbuddie) {
       return e.stack;
     }
     )
-    client.close();
 }
 
 
@@ -103,7 +105,7 @@ function selectEventParticipants(eventId) {
       AND p.user_id = u.id `,
       [eventId]
     )
-    client.close();
+    client.end();
 }
 
 function selectEventExpenses(eventId) {
