@@ -183,7 +183,6 @@ app.get(
   }
 );
 
-
 /////////////////////////////////////////
 // roots for event
 /////////////////////////////////////////
@@ -236,7 +235,10 @@ app.get("/newevent", function(request, result) {
     result.render("eventdetail")
   });
 
-
+  app.post("/eventdetail", function(request, result){
+    const eventID = request.eventid;
+    result.render("eventdetail" , {message : `This is the detail of your event : ${event}`})
+  });
 
 /////////////////////////////////////////
 // roots for expense

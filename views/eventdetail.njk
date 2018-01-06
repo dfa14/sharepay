@@ -2,19 +2,16 @@
 
 {% block content %}
 <div>
-
-  <h2> Details of the event : XXXX </h2>
-  <div class="row pt-3">
-    <div class="col-lg-2">
-      <button> + Add an activity </button>
-    </div>
-    <div class="col-lg-2">
-      <button> History </button>
+  <h2 class="text-center top-space"> {{message}} </h2>
+  <div class ="container top-space">
+    <div class="row justify-content-center">
+      <!--<button type="button" class="btn btn-secondary col-2 offset-0">ADD AN ACTIVITY</button>-->
+      <input type="button" class="btn btn-secondary col-2 offset-1" value="ADD AN EXPENSE" onclick="location.href = '/5d248d65-790c-4deb-8c23-48db88a70e15/new_expense';">
+      <!--<button type="button" class="btn btn-secondary col-2 offset-1" href="/dashboard">BACK DASHBOARD</button>-->
+      <input type="button" class="btn btn-secondary col-2 offset-1" value="BACK DASHBOARD" onclick="location.href = '/dashboard';">
     </div>
   </div>
 
-
-  <
 </div>
 
 {% endblock %}
